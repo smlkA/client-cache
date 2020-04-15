@@ -1,36 +1,46 @@
 const { mergeWithInitOrder } = require("./utils");
 
 const clientCache = {
-  check(cachedResult, date, isins) {
-    return isins.reduce(
-      (acc, isin) => {
-        if (cachedResult[date] && cachedResult[date][isin]) {
-          acc.cachedIsins.push({ isin, data: cachedResult[date][isin].data });
+  lsKey: "client_cache",
+
+  check(date, isins) {
+    const cache = JSON.parse(localStorage.getItem(this.lsKey));
+    if (cache) {
+      return isins.reduce(
+        (acc, isin) => {
+          if (cache[date] && cache[date][isin]) {
+            acc.cachedIsins.push({ isin, data: cache[date][isin].data });
+            return acc;
+          }
+          acc.newIsins.push(isin);
           return acc;
-        }
-        acc.newIsins.push(isin);
-        return acc;
-      },
-      { cachedIsins: [], newIsins: [] }
-    );
+        },
+        { cachedIsins: [], newIsins: [] }
+      );
+    } else {
+      return { cachedIsins: [], newIsins: isins };
+    }
   },
 
-  update(cachedResult, date, results) {
-    return results.reduce((acc, { isin, data }) => {
+  update(date, results) {
+    const cache = JSON.parse(localStorage.getItem(this.lsKey)) || {};
+
+    const updateCache = results.reduce((acc, { isin, data }) => {
       acc[date] = { ...acc[date], [isin]: { data } };
       return acc;
-    }, cachedResult);
+    }, cache);
+
+    return localStorage.setItem(this.lsKey, JSON.stringify(updateCache));
   },
 };
 
 const createCachedGetBondsData = (getBondsData) => {
-  const cache = {};
   return async ({ date, isins }) => {
-    const { cachedIsins, newIsins } = clientCache.check(cache, date, isins);
+    const { cachedIsins, newIsins } = clientCache.check(date, isins);
 
     if (newIsins.length) {
       const results = await getBondsData({ date, isins: newIsins });
-      clientCache.update(cache, date, results);
+      clientCache.update(date, results);
       return mergeWithInitOrder(isins, cachedIsins, results);
     }
     return cachedIsins;

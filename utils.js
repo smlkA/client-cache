@@ -1,4 +1,7 @@
 const mergeWithInitOrder = (initArray, cachedIsins, results) => {
+  if (!cachedIsins.length) {
+    return results;
+  }
   const resultObject = [...cachedIsins, ...results].reduce((acc, elem) => {
     acc[elem.isin] = elem.data;
     return acc;
