@@ -1,3 +1,5 @@
+const { mergeWithInitOrder } = require("./utils");
+
 const clientCache = {
   check(cachedResult, date, isins) {
     return isins.reduce(
@@ -29,7 +31,7 @@ const createCachedGetBondsData = (getBondsData) => {
     if (newIsins.length) {
       const results = await getBondsData({ date, isins: newIsins });
       clientCache.update(cache, date, results);
-      return [...cachedIsins, ...results];
+      return mergeWithInitOrder(isins, cachedIsins, results);
     }
     return cachedIsins;
   };

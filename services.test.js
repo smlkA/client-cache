@@ -37,12 +37,12 @@ describe("getBondsDataWithCache", () => {
   it("should call api method and return from cache", async () => {
     const result = await getBondsDataWithCache({
       date: "20180120",
-      isins: ["XS0971721963", "RU000A0JU4L3", "EU111B9JU4KO"],
+      isins: ["XS0971721963", "EU111B9JU4KO", "RU000A0JU4L3"],
     });
     expect(result).toEqual([
       { isin: "XS0971721963", data: {} },
-      { isin: "RU000A0JU4L3", data: {} },
       { isin: "EU111B9JU4KO", data: {} },
+      { isin: "RU000A0JU4L3", data: {} },
     ]);
 
     expect(mockGetBondsData).toHaveBeenCalledTimes(2);
